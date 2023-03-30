@@ -1,0 +1,190 @@
+m255
+K4
+z2
+13
+!s112 1.1
+!i10d 8192
+!i10e 25
+!i10f 100
+cModel Technology
+dC:/Users/D/documents/school/ece243/lab8/design_Files/part3.Verilog/modelSim
+vdec3to8
+Z0 !s110 1679551887
+!i10b 1
+!s100 @<T8^o:8VUdHP?og__fcZ1
+IUU1Z[Cl3UAAg9C]AAcGJ>1
+Z1 VDg1SIo80bB@j0V0VzS_@n1
+Z2 dC:/Users/D/Documents/School/ECE243/lab8/design_Files/part3.Verilog/modelSim
+Z3 w1679032537
+Z4 8../proc.v
+Z5 F../proc.v
+L0 239
+Z6 OV;L;10.5b;63
+r1
+!s85 0
+31
+Z7 !s108 1679551887.000000
+Z8 !s107 ../top.v|../proc.v|../part3.v|../inst_mem.v|../flipflop.v|
+Z9 !s90 -reportprogress|300|../flipflop.v|../inst_mem.v|../part3.v|../proc.v|../top.v|
+!i113 1
+Z10 tCvgOpt 0
+vflipflop
+R0
+!i10b 1
+!s100 4H2K_V>f3BSlSog@_SfWf0
+If;>LCi5HH2UkIZ<N0]YNc1
+R1
+R2
+w1467679640
+8../flipflop.v
+F../flipflop.v
+L0 1
+R6
+r1
+!s85 0
+31
+R7
+R8
+R9
+!i113 1
+R10
+vinst_mem
+R0
+!i10b 1
+!s100 K4RmZIQj0T6D3l>Szck240
+Ia4X7][PRd9=TRP4J;ZKQ22
+R1
+R2
+w1540588522
+8../inst_mem.v
+F../inst_mem.v
+L0 39
+R6
+r1
+!s85 0
+31
+R7
+R8
+R9
+!i113 1
+R10
+vpart3
+R0
+!i10b 1
+!s100 _R5XRJDd=InWWZcBK:_f`1
+Il=TDk^QVln7n>c2HN@<4I1
+R1
+R2
+w1679032269
+8../part3.v
+F../part3.v
+L0 3
+R6
+r1
+!s85 0
+31
+R7
+R8
+R9
+!i113 1
+R10
+vpc_count
+R0
+!i10b 1
+!s100 iD:M3S6:g`j@:;AZ6L[811
+I^CL]`7O<Tz>OBB1[lmbZH0
+R1
+R2
+R3
+R4
+R5
+L0 224
+R6
+r1
+!s85 0
+31
+R7
+R8
+R9
+!i113 1
+R10
+vproc
+R0
+!i10b 1
+!s100 ^<S<Y45OhhII9ECPaQ2;h3
+I5Pf7nhnJLZb2l=@K:m2183
+R1
+R2
+R3
+R4
+R5
+L0 1
+R6
+r1
+!s85 0
+31
+R7
+R8
+R9
+!i113 1
+R10
+vregn
+R0
+!i10b 1
+!s100 F0hPbYzHM88o59HEIRhdF1
+IzOzgDD@:;WXkK:WYzO7JS1
+R1
+R2
+R3
+R4
+R5
+L0 261
+R6
+r1
+!s85 0
+31
+R7
+R8
+R9
+!i113 1
+R10
+vtestbench
+R0
+!i10b 1
+!s100 ?[fG5za=APMjJYFKGcfRA1
+I_0YSR[EWJ4Wj5W6o^f0@i0
+R1
+R2
+w1679033796
+8testbench.v
+Ftestbench.v
+L0 3
+R6
+r1
+!s85 0
+31
+R7
+!s107 testbench.v|
+!s90 -reportprogress|300|testbench.v|
+!i113 1
+R10
+vtop
+R0
+!i10b 1
+!s100 a04T=bVgfn3AB65Tgk<dm3
+Idh9lAijb[b[ZA9dOQBUf]3
+R1
+R2
+w1610702436
+8../top.v
+F../top.v
+L0 1
+R6
+r1
+!s85 0
+31
+R7
+R8
+R9
+!i113 1
+R10

@@ -1,0 +1,230 @@
+m255
+K4
+z2
+13
+!s112 1.1
+!i10d 8192
+!i10e 25
+!i10f 100
+cModel Technology
+Z0 dC:/Users/D/documents/school/ece243/lab8/design_Files/part5.Verilog/modelSim
+vdec3to8
+Z1 !s110 1680013014
+!i10b 1
+!s100 M<iDejU9z<`HL8NKE=`WE1
+I@@h^^DgmQFf3WfDn4M]HU2
+Z2 VDg1SIo80bB@j0V0VzS_@n1
+R0
+Z3 w1679991443
+Z4 8../proc.v
+Z5 F../proc.v
+L0 326
+Z6 OV;L;10.5b;63
+r1
+!s85 0
+31
+Z7 !s108 1680013014.000000
+Z8 !s107 ../top.v|../seg7.v|../proc.v|../part5.v|../inst_mem.v|../flipflop.v|
+Z9 !s90 -reportprogress|300|../flipflop.v|../inst_mem.v|../part5.v|../proc.v|../seg7.v|../top.v|
+!i113 1
+Z10 tCvgOpt 0
+vflipflop
+R1
+!i10b 1
+!s100 4H2K_V>f3BSlSog@_SfWf0
+If;>LCi5HH2UkIZ<N0]YNc1
+R2
+R0
+w1467679640
+8../flipflop.v
+F../flipflop.v
+L0 1
+R6
+r1
+!s85 0
+31
+R7
+R8
+R9
+!i113 1
+R10
+vinst_mem
+R1
+!i10b 1
+!s100 K4RmZIQj0T6D3l>Szck240
+Ia4X7][PRd9=TRP4J;ZKQ22
+R2
+R0
+w1540588522
+8../inst_mem.v
+F../inst_mem.v
+L0 39
+R6
+r1
+!s85 0
+31
+R7
+R8
+R9
+!i113 1
+R10
+vpart5
+R1
+!i10b 1
+!s100 4f9@JVe[7S=QZ@Q;J3IJW0
+IkYE1E@d971]f^<l@M=LK21
+R2
+R0
+w1610703204
+8../part5.v
+F../part5.v
+L0 3
+R6
+r1
+!s85 0
+31
+R7
+R8
+R9
+!i113 1
+R10
+vpc_count
+R1
+!i10b 1
+!s100 2g^ULQz9:^KLR]lh6[>hi1
+ILLFO0A8YM@AI@NC31HBk>0
+R2
+R0
+R3
+R4
+R5
+L0 311
+R6
+r1
+!s85 0
+31
+R7
+R8
+R9
+!i113 1
+R10
+vproc
+R1
+!i10b 1
+!s100 GjXjWHmXQY8a9RiQfdO=a3
+I:1L?HGIBjh5AT_b:3TgAO2
+R2
+R0
+R3
+R4
+R5
+L0 1
+R6
+r1
+!s85 0
+31
+R7
+R8
+R9
+!i113 1
+R10
+vreg7
+R1
+!i10b 1
+!s100 :JQ5SZl@f:ig;Hj<4?n<O0
+IS9K6[meLTM;^67`iWNz@n1
+R2
+R0
+Z11 w1611128598
+Z12 8../seg7.v
+Z13 F../seg7.v
+L0 19
+R6
+r1
+!s85 0
+31
+R7
+R8
+R9
+!i113 1
+R10
+vregn
+R1
+!i10b 1
+!s100 R5GMj<;4oz>?n00aSbK9<1
+I9mDY?nJ6>=P>C96:X<W_J1
+R2
+R0
+R3
+R4
+R5
+L0 348
+R6
+r1
+!s85 0
+31
+R7
+R8
+R9
+!i113 1
+R10
+vseg7
+R1
+!i10b 1
+!s100 fZ^8h1^TZ^[VTz1Y7;M:a2
+IZ2dK`;Sf6WkG2kT7:67Zl3
+R2
+R0
+R11
+R12
+R13
+L0 2
+R6
+r1
+!s85 0
+31
+R7
+R8
+R9
+!i113 1
+R10
+vtestbench
+R1
+!i10b 1
+!s100 Lf8k4F5f1n`5=^Ie?;MCd1
+I@CNEeS^;:^XSAU2?0<4z20
+R2
+R0
+w1562466484
+8testbench.v
+Ftestbench.v
+L0 3
+R6
+r1
+!s85 0
+31
+R7
+!s107 testbench.v|
+!s90 -reportprogress|300|testbench.v|
+!i113 1
+R10
+vtop
+R1
+!i10b 1
+!s100 JWYd6[53kB_^Jh95I7OzJ2
+I5ce[AiBKCdh@bVQKTlJ3A0
+R2
+R0
+w1607302896
+8../top.v
+F../top.v
+L0 1
+R6
+r1
+!s85 0
+31
+R7
+R8
+R9
+!i113 1
+R10

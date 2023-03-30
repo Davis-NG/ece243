@@ -1,0 +1,51 @@
+m255
+K4
+z2
+13
+!s112 1.1
+!i10d 8192
+!i10e 25
+!i10f 100
+cModel Technology
+Z0 dC:/Users/D/Documents/School/ECE243/lab6/Design_Files_Lab6/Addern/ModelSim
+vAddern
+Z1 !s110 1677280818
+!i10b 1
+!s100 ]A@jh;3PUz94VG5Ez^D;G1
+I;U:c1U^aKAlO<QgJ@_W>W3
+Z2 VDg1SIo80bB@j0V0VzS_@n1
+R0
+w1543269456
+8../Addern.v
+F../Addern.v
+L0 2
+Z3 OV;L;10.5b;63
+r1
+!s85 0
+31
+Z4 !s108 1677280818.000000
+!s107 ../Addern.v|
+!s90 -reportprogress|300|../Addern.v|
+!i113 1
+Z5 tCvgOpt 0
+n@addern
+vtestbench
+R1
+!i10b 1
+!s100 MUNCZFAaDO_E61Fe7PQG_3
+I^a;gh9gT3lNk68XGNg^FM0
+R2
+R0
+w1573944022
+8testbench.v
+Ftestbench.v
+L0 3
+R3
+r1
+!s85 0
+31
+R4
+!s107 testbench.v|
+!s90 -reportprogress|300|testbench.v|
+!i113 1
+R5

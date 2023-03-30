@@ -1,0 +1,230 @@
+m255
+K4
+z2
+13
+!s112 1.1
+!i10d 8192
+!i10e 25
+!i10f 100
+cModel Technology
+Z0 dC:/Users/D/Documents/School/ECE243/lab8/Design_Files/part4.Verilog/sim
+vdec3to8
+Z1 !s110 1679548027
+!i10b 1
+!s100 @<T8^o:8VUdHP?og__fcZ1
+IUU1Z[Cl3UAAg9C]AAcGJ>1
+Z2 VDg1SIo80bB@j0V0VzS_@n1
+R0
+Z3 w1679035640
+Z4 8../proc.v
+Z5 F../proc.v
+L0 239
+Z6 OV;L;10.5b;63
+r1
+!s85 0
+31
+Z7 !s108 1679548027.000000
+Z8 !s107 ../top.v|../seg7.v|../proc.v|../part4.v|../inst_mem.v|../flipflop.v|
+Z9 !s90 ../flipflop.v|../inst_mem.v|../part4.v|../proc.v|../seg7.v|../top.v|
+!i113 1
+Z10 tCvgOpt 0
+vflipflop
+R1
+!i10b 1
+!s100 4H2K_V>f3BSlSog@_SfWf0
+If;>LCi5HH2UkIZ<N0]YNc1
+R2
+R0
+w1561850778
+8../flipflop.v
+F../flipflop.v
+L0 1
+R6
+r1
+!s85 0
+31
+R7
+R8
+R9
+!i113 1
+R10
+vinst_mem
+R1
+!i10b 1
+!s100 K4RmZIQj0T6D3l>Szck240
+Ia4X7][PRd9=TRP4J;ZKQ22
+R2
+R0
+w1540588522
+8../inst_mem.v
+F../inst_mem.v
+L0 39
+R6
+r1
+!s85 0
+31
+R7
+R8
+R9
+!i113 1
+R10
+vpart4
+R1
+!i10b 1
+!s100 Rzd6F]BX``N1;Z=DF?5Q30
+IC4Imk5[1liB4;aURSBT:V0
+R2
+R0
+w1610703130
+8../part4.v
+F../part4.v
+L0 3
+R6
+r1
+!s85 0
+31
+R7
+R8
+R9
+!i113 1
+R10
+vpc_count
+R1
+!i10b 1
+!s100 iD:M3S6:g`j@:;AZ6L[811
+I^CL]`7O<Tz>OBB1[lmbZH0
+R2
+R0
+R3
+R4
+R5
+L0 224
+R6
+r1
+!s85 0
+31
+R7
+R8
+R9
+!i113 1
+R10
+vproc
+R1
+!i10b 1
+!s100 ^<S<Y45OhhII9ECPaQ2;h3
+I5Pf7nhnJLZb2l=@K:m2183
+R2
+R0
+R3
+R4
+R5
+L0 1
+R6
+r1
+!s85 0
+31
+R7
+R8
+R9
+!i113 1
+R10
+vreg7
+R1
+!i10b 1
+!s100 :JQ5SZl@f:ig;Hj<4?n<O0
+IS9K6[meLTM;^67`iWNz@n1
+R2
+R0
+Z11 w1679035539
+Z12 8../seg7.v
+Z13 F../seg7.v
+L0 19
+R6
+r1
+!s85 0
+31
+R7
+R8
+R9
+!i113 1
+R10
+vregn
+R1
+!i10b 1
+!s100 F0hPbYzHM88o59HEIRhdF1
+IzOzgDD@:;WXkK:WYzO7JS1
+R2
+R0
+R3
+R4
+R5
+L0 261
+R6
+r1
+!s85 0
+31
+R7
+R8
+R9
+!i113 1
+R10
+vseg7
+R1
+!i10b 1
+!s100 fZ^8h1^TZ^[VTz1Y7;M:a2
+IZ2dK`;Sf6WkG2kT7:67Zl3
+R2
+R0
+R11
+R12
+R13
+L0 2
+R6
+r1
+!s85 0
+31
+R7
+R8
+R9
+!i113 1
+R10
+vtb
+R1
+!i10b 1
+!s100 hTj^;2FV1Y2mRD]WDVX8>1
+I5]nGZE=WJP0?3<G>Yld9N0
+R2
+R0
+w1608761658
+8../tb/tb.v
+F../tb/tb.v
+L0 6
+R6
+r1
+!s85 0
+31
+R7
+!s107 ../tb/tb.v|
+!s90 ../tb/tb.v|
+!i113 1
+R10
+vtop
+R1
+!i10b 1
+!s100 PDDCK9AVA[FM6hdllRc`?3
+IFI;5LmDC_6O_:fZEP6^4h0
+R2
+R0
+w1610701792
+8../top.v
+F../top.v
+L0 1
+R6
+r1
+!s85 0
+31
+R7
+R8
+R9
+!i113 1
+R10
