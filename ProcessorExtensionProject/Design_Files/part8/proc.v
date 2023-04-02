@@ -9,19 +9,20 @@ module proc(DIN, Resetn, Clock, Run, DOUT, ADDR, W);
     reg rX_in, IR_in, ADDR_in, Done, DOUT_in, A_in, G_in, AddSub, ALU_and, F_in;
     reg [2:0] Tstep_Q, Tstep_D;
     reg [15:0] BusWires;
-    reg [3:0] Select; // BusWires selector
+    reg [3:0] Sel; // BusWires selector
     reg [15:0] Sum;
 	reg Carry;			// carry bit
 	 
     wire [2:0] III, rX, rY; // instruction opcode and register operands
-    wire [15:0] r0, r1, r2, r3, r4, sp, r6, pc, A;
+    wire [15:0] r0, r1, r2, r3, r4, r5, r6, pc, A;
     wire [15:0] G;
     wire [15:0] IR;
     reg pc_incr;    // used to increment the pc
     reg pc_in;      // used to load the pc
     reg sp_incr;    // used to increment
-    reg sp_decr;    // used to decrement the sp
+    reg sp_dec;     // used to decrement the sp
     reg sp_in;      // used to load the sp
+    reg lr_in;      // used to load the lr
     reg W_D;        // used for write signal
     wire Imm;
 	wire [2:0] condition;   // to read condition codes
@@ -37,7 +38,7 @@ module proc(DIN, Resetn, Clock, Run, DOUT, ADDR, W);
 	assign c_alu = Carry;			// carry bit of ALU
 	assign n_alu = Sum[15];			// MSB
 	assign z_alu = ~|Sum[15:0];		// nor gate 
-	assign condition = IR[11:9];  //XXX 
+	assign condition = IR[11:9];    //XXX 
 	 
 	always @(posedge Clock) begin
 	    if (F_in) 
@@ -97,26 +98,27 @@ module proc(DIN, Resetn, Clock, Run, DOUT, ADDR, W);
 	     and_ = 3'b110, b_xxx = 3'b001, cmp = 3'b111;
     // selectors for the BusWires multiplexer
     parameter _R0 = 4'b0000, _R1 = 4'b0001, _R2 = 4'b0010, _R3 = 4'b0011, _R4 = 4'b0100,
-        _SP = 4'b0101, _R6 = 4'b0110, _PC = 4'b0111, _G = 4'b1000, 
+        _R5 = 4'b0101, _R6 = 4'b0110, _PC = 4'b0111, _G = 4'b1000, 
         _IR8_IR8_0 /* signed-extended immediate data */ = 4'b1001, 
         _IR7_0_0 /* immediate data << 8 */ = 4'b1010,
         _DIN /* data-in from memory */ = 4'b1011;
 	
 	// conditional branches codes  
 	parameter none = 3'b000, eq = 3'b001, ne = 3'b010, cc = 3'b011, cs = 3'b100, pl = 3'b101, 
-			mi = 3'b110;
+			mi = 3'b110, bl = 3'b111;
 			  
     // Control FSM outputs
     always @(*) begin
         // default values for control signals
         rX_in = 1'b0; A_in = 1'b0; G_in = 1'b0; IR_in = 1'b0; DOUT_in = 1'b0; ADDR_in = 1'b0; 
-        Select = 4'bxxxx; AddSub = 1'b0; ALU_and = 1'b0; W_D = 1'b0; Done = 1'b0; F_in = 1'b0;
+        Sel = 4'bxxxx; AddSub = 1'b0; ALU_and = 1'b0; W_D = 1'b0; Done = 1'b0; F_in = 1'b0;
         pc_in = R_in[7] /* default pc enable */; pc_incr = 1'b0;
-        sp_in = R_in[5] /* default sp enable*/; sp_incr = 1'b0; sp_decr = 1'b0;
+        sp_in = R_in[5] /* default sp enable*/; sp_incr = 1'b0; sp_dec = 1'b0;
+        lr_in = 1'b0;
 
         case (Tstep_Q)
             T0: begin // fetch the instruction
-                Select = _PC;  // put pc onto the internal bus
+                Sel = _PC;  // put pc onto the internal bus
                 ADDR_in = 1'b1;
                 pc_incr = Run; // to increment pc
             end
@@ -127,20 +129,20 @@ module proc(DIN, Resetn, Clock, Run, DOUT, ADDR, W);
             T3: // define signals in T3
                 case (III)
                     mv: begin
-                        if (!Imm) Select = rY;          // mv rX, rY
-                        else Select = _IR8_IR8_0;       // mv rX, #D
-                        rX_in = 1'b1;                   // enable the rX register
+                        if (!Imm) Sel = rY;          // mv rX, rY
+                        else Sel = _IR8_IR8_0;       // mv rX, #D
+                        rX_in = 1'b1;                // enable the rX register
                         Done = 1'b1;
                     end
                     mvt: begin
                         if (Imm == 1'b1) begin
-							Select = _IR7_0_0;
+							Sel = _IR7_0_0;
 							rX_in = 1'b1;
 							Done = 1'b1;
 						end
 								
 						else begin //Imm = 0
-							Select = _PC;
+							Sel = _PC;
 							A_in = 1'b1;
 							
 							case (condition)
@@ -167,19 +169,21 @@ module proc(DIN, Resetn, Clock, Run, DOUT, ADDR, W);
 								pl: begin	// done if condition of n = 0 not met
 									if (n == 1'b1) Done = 1'b1;
 								end
-				
+                                bl: begin
+                                    lr_in = 1'b1;
+                                end
 							endcase
 						end
                     end
                     
 					add, sub, and_: begin
-                        Select = rX;
+                        Sel = rX;
                         A_in = 1'b1;
 								
                     end
 
                     ld: begin   // ld or pop
-                        Select = rY;
+                        Sel = rY;
                         ADDR_in = 1'b1;
 
                         if (Imm == 1'b1)    // one extra control signal for pop
@@ -188,10 +192,10 @@ module proc(DIN, Resetn, Clock, Run, DOUT, ADDR, W);
                     
                     st: begin   // st or push
                         if (Imm == 1'b0) begin  // this is a store instruction
-                            Select = rY;
+                            Sel = rY;
                             ADDR_in = 1'b1;
                         end else                // this is a push instruction
-                            sp_decr = 1'b1;
+                            sp_dec = 1'b1;
                     end
 			  
                     default: ;
@@ -200,26 +204,26 @@ module proc(DIN, Resetn, Clock, Run, DOUT, ADDR, W);
                 case (III)
                     add: begin
                         if (Imm)
-                            Select = _IR8_IR8_0;
+                            Sel = _IR8_IR8_0;
                         else
-                            Select = rY; 
+                            Sel = rY; 
                             G_in = 1'b1;
 							F_in = 1'b1;						// F_in is only high in add/sub
                     end
                     sub: begin
                         if (Imm)
-                            Select = _IR8_IR8_0;
+                            Sel = _IR8_IR8_0;
                         else
-                            Select = rY; 
+                            Sel = rY; 
                             G_in = 1'b1;
 							F_in = 1'b1;						// F_in is only high in add/sub
                             AddSub = 1'b1;
                     end
                     and_: begin
                         if (Imm)
-                            Select = _IR8_IR8_0;
+                            Sel = _IR8_IR8_0;
                         else
-                            Select = rY; 
+                            Sel = rY; 
                             G_in = 1'b1;
                             ALU_and = 1'b1;
                     end
@@ -227,18 +231,18 @@ module proc(DIN, Resetn, Clock, Run, DOUT, ADDR, W);
                         ;
                     st: begin
                         if (Imm == 1'b0) begin  // this is a store instruction
-                            Select = rX;
+                            Sel = rX;
                             DOUT_in = 1'b1;
                             W_D = 1'b1;
                             Done = 1'b1;
                         end else begin          // this is a push instruction
-                            Select = rY;
+                            Sel = rY;
                             ADDR_in = 1'b1;
                         end
                     end
 						  
 					b_xxx: begin // bxxx = mvt -> can use either paremeter because mvt is done in T3
-						Select = _IR8_IR8_0;
+						Sel = _IR8_IR8_0;
 						G_in = 1'b1;
 					end
 								
@@ -247,26 +251,26 @@ module proc(DIN, Resetn, Clock, Run, DOUT, ADDR, W);
             T5: // define T3
                 case (III)
                     add, sub, and_: begin
-                        Select = _G;
+                        Sel = _G;
                         rX_in = 1'b1;
                         Done = 1'b1;
                     end
 
                     ld: begin          // ld and pop behave exactly the same in T5
-                        Select = _DIN;
+                        Sel = _DIN;
                         rX_in = 1'b1;
                         Done = 1'b1;
                     end
                     
                     st: begin          // Only the push instruction will get this far
-                        Select = rX;
+                        Sel = rX;
                         DOUT_in = 1'b1;
                         W_D = 1'b1;
                         Done = 1'b1;
                     end
 						  
 					b_xxx: begin
-						Select = _G;
+						Sel = _G;
 						pc_in = 1'b1;
 						Done = 1'b1;
 					end	    
@@ -289,7 +293,7 @@ module proc(DIN, Resetn, Clock, Run, DOUT, ADDR, W);
     regn reg_3 (BusWires, Resetn, R_in[3], Clock, r3);
     regn reg_4 (BusWires, Resetn, R_in[4], Clock, r4);
     //regn reg_5 (BusWires, Resetn, R_in[5], Clock, r5);
-    regn reg_6 (BusWires, Resetn, R_in[6], Clock, r6);
+    regn reg_6 (BusWires, Resetn, R_in[6]|lr_in, Clock, r6);
 
     // r7 is program counter
     // module pc_count(R, Resetn, Clock, E, L, Q);
@@ -301,9 +305,9 @@ module proc(DIN, Resetn, Clock, Run, DOUT, ADDR, W);
         .Resetn(Resetn),
         .Clock(Clock),
         .U(sp_incr),
-        .D(sp_decr),
+        .D(sp_dec),
         .L(sp_in),
-        .Q(sp)
+        .Q(r5)
     );
 
     regn reg_A (BusWires, Resetn, A_in, Clock, A);
@@ -326,13 +330,13 @@ module proc(DIN, Resetn, Clock, Run, DOUT, ADDR, W);
 
     // define the internal processor bus
     always @(*)
-        case (Select)
+        case (Sel)
             _R0: BusWires = r0;
             _R1: BusWires = r1;
             _R2: BusWires = r2;
             _R3: BusWires = r3;
             _R4: BusWires = r4;
-            _SP: BusWires = sp;
+            _R5: BusWires = r5;
             _R6: BusWires = r6;
             _PC: BusWires = pc;
             _G: BusWires = G;

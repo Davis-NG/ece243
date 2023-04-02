@@ -46,6 +46,4 @@ module part8 (KEY, SW, CLOCK_50, HEX5, HEX4, HEX3, HEX2, HEX1, HEX0, LEDR);
 
     // module regn(R, Rin, Clock, Q);
     regn #(.n(9)) U7 (SW[8:0], KEY[0], 1'b1, CLOCK_50, SW_reg); // SW[9] is used for Run
-
 endmodule
-
