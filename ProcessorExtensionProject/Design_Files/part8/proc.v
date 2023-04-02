@@ -11,48 +11,43 @@ module proc(DIN, Resetn, Clock, Run, DOUT, ADDR, W);
     reg [15:0] BusWires;
     reg [3:0] Select; // BusWires selector
     reg [15:0] Sum;
-	 reg Carry;			// carry bit
+	reg Carry;			// carry bit
 	 
     wire [2:0] III, rX, rY; // instruction opcode and register operands
-    wire [15:0] r0, r1, r2, r3, r4, r5, r6, pc, A;
+    wire [15:0] r0, r1, r2, r3, r4, sp, r6, pc, A;
     wire [15:0] G;
     wire [15:0] IR;
     reg pc_incr;    // used to increment the pc
     reg pc_in;      // used to load the pc
+    reg sp_incr;    // used to increment
+    reg sp_decr;    // used to decrement the sp
+    reg sp_in;      // used to load the sp
     reg W_D;        // used for write signal
     wire Imm;
-	wire [2:0] condition;			// to read condition codes
+	wire [2:0] condition;   // to read condition codes
 	wire z, n, c;
 	wire z_alu, n_alu, c_alu;
-	reg [2:0] F; 			// register F
+	reg [2:0] F;    // register F
    
     assign III = IR[15:13];
     assign Imm = IR[12];
     assign rX = IR[11:9];
     assign rY = IR[2:0];
-	 
-	 
+
 	assign c_alu = Carry;			// carry bit of ALU
 	assign n_alu = Sum[15];			// MSB
 	assign z_alu = ~|Sum[15:0];		// nor gate 
 	assign condition = IR[11:9];  //XXX 
 	 
-	
 	always @(posedge Clock) begin
 	    if (F_in) 
 			F <= {c_alu, n_alu, z_alu};			// contaenate and store into 
-		end 
+	end 
+
 	// set flags
 	assign z = F[0];
 	assign n = F[1];
 	assign c = F[2];
-  
-	 
-	// set flags
-	//assign z = F[0];
-	///assign n = F[1];
-	//assign z = F[2];
-	 
 	 
     dec3to8 decX (rX_in, rX, R_in); // produce r0 - r7 register enables
 
@@ -81,8 +76,8 @@ module proc(DIN, Resetn, Clock, Run, DOUT, ADDR, W);
     *     III = instruction, M = Immediate, XXX = rX. If M = 0, DDDDDDDDD = 000000YYY = rY
     *     If M = 1, DDDDDDDDD = #D is the immediate operand 
     *
-    *  III M  Instruction   Description
-    *  --- -  -----------   -----------
+    *  III M  Instruction       Description
+    *  --- -  -----------       -----------
     *  000 0: mv   rX,rY    rX <- rY
     *  000 1: mv   rX,#D    rX <- D (sign extended)
     *  001 1: mvt  rX,#D    rX <- D << 8
@@ -92,13 +87,17 @@ module proc(DIN, Resetn, Clock, Run, DOUT, ADDR, W);
     *  011 1: sub  rX,#D    rX <- rX - D
     *  100 0: ld   rX,[rY]  rX <- [rY]
     *  101 0: st   rX,[rY]  [rY] <- rX
+    *  100 1: pop  rX       rX ← [sp], sp ← sp + 1
+    *  101 1: push rX       sp ← sp − 1, [sp] ← rX
     *  110 0: and  rX,rY    rX <- rX & rY
-    *  110 1: and  rX,#D    rX <- rX & D */
+    *  110 1: and  rX,#D    rX <- rX & D 
+    *  111 0: cmp  rX,rY    performs rX − rY, sets flags 
+    *  111 1: cmp  rX,#D    performs rX − D, sets flags */
     parameter mv = 3'b000, mvt = 3'b001, add = 3'b010, sub = 3'b011, ld = 3'b100, st = 3'b101,
-	     and_ = 3'b110, b_xxx = 3'b001;
+	     and_ = 3'b110, b_xxx = 3'b001, cmp = 3'b111;
     // selectors for the BusWires multiplexer
     parameter _R0 = 4'b0000, _R1 = 4'b0001, _R2 = 4'b0010, _R3 = 4'b0011, _R4 = 4'b0100,
-        _R5 = 4'b0101, _R6 = 4'b0110, _PC = 4'b0111, _G = 4'b1000, 
+        _SP = 4'b0101, _R6 = 4'b0110, _PC = 4'b0111, _G = 4'b1000, 
         _IR8_IR8_0 /* signed-extended immediate data */ = 4'b1001, 
         _IR7_0_0 /* immediate data << 8 */ = 4'b1010,
         _DIN /* data-in from memory */ = 4'b1011;
@@ -106,14 +105,14 @@ module proc(DIN, Resetn, Clock, Run, DOUT, ADDR, W);
 	// conditional branches codes  
 	parameter none = 3'b000, eq = 3'b001, ne = 3'b010, cc = 3'b011, cs = 3'b100, pl = 3'b101, 
 			mi = 3'b110;
-		
-		  
+			  
     // Control FSM outputs
     always @(*) begin
         // default values for control signals
         rX_in = 1'b0; A_in = 1'b0; G_in = 1'b0; IR_in = 1'b0; DOUT_in = 1'b0; ADDR_in = 1'b0; 
         Select = 4'bxxxx; AddSub = 1'b0; ALU_and = 1'b0; W_D = 1'b0; Done = 1'b0; F_in = 1'b0;
         pc_in = R_in[7] /* default pc enable */; pc_incr = 1'b0;
+        sp_in = R_in[5] /* default sp enable*/; sp_incr = 1'b0; sp_decr = 1'b0;
 
         case (Tstep_Q)
             T0: begin // fetch the instruction
@@ -178,9 +177,21 @@ module proc(DIN, Resetn, Clock, Run, DOUT, ADDR, W);
                         A_in = 1'b1;
 								
                     end
-                    ld, st: begin
+
+                    ld: begin   // ld or pop
                         Select = rY;
                         ADDR_in = 1'b1;
+
+                        if (Imm == 1'b1)    // one extra control signal for pop
+                            sp_incr = 1'b1;
+                    end
+                    
+                    st: begin   // st or push
+                        if (Imm == 1'b0) begin  // this is a store instruction
+                            Select = rY;
+                            ADDR_in = 1'b1;
+                        end else                // this is a push instruction
+                            sp_decr = 1'b1;
                     end
 			  
                     default: ;
@@ -215,10 +226,15 @@ module proc(DIN, Resetn, Clock, Run, DOUT, ADDR, W);
                     ld: // wait cycle for synchronous memory
                         ;
                     st: begin
-                        Select = rX;
-                        DOUT_in = 1'b1;
-                        W_D = 1'b1;
-                        Done = 1'b1;
+                        if (Imm == 1'b0) begin  // this is a store instruction
+                            Select = rX;
+                            DOUT_in = 1'b1;
+                            W_D = 1'b1;
+                            Done = 1'b1;
+                        end else begin          // this is a push instruction
+                            Select = rY;
+                            ADDR_in = 1'b1;
+                        end
                     end
 						  
 					b_xxx: begin // bxxx = mvt -> can use either paremeter because mvt is done in T3
@@ -235,9 +251,17 @@ module proc(DIN, Resetn, Clock, Run, DOUT, ADDR, W);
                         rX_in = 1'b1;
                         Done = 1'b1;
                     end
-                    ld: begin
+
+                    ld: begin          // ld and pop behave exactly the same in T5
                         Select = _DIN;
                         rX_in = 1'b1;
+                        Done = 1'b1;
+                    end
+                    
+                    st: begin          // Only the push instruction will get this far
+                        Select = rX;
+                        DOUT_in = 1'b1;
+                        W_D = 1'b1;
                         Done = 1'b1;
                     end
 						  
@@ -264,12 +288,23 @@ module proc(DIN, Resetn, Clock, Run, DOUT, ADDR, W);
     regn reg_2 (BusWires, Resetn, R_in[2], Clock, r2);
     regn reg_3 (BusWires, Resetn, R_in[3], Clock, r3);
     regn reg_4 (BusWires, Resetn, R_in[4], Clock, r4);
-    regn reg_5 (BusWires, Resetn, R_in[5], Clock, r5);
+    //regn reg_5 (BusWires, Resetn, R_in[5], Clock, r5);
     regn reg_6 (BusWires, Resetn, R_in[6], Clock, r6);
 
     // r7 is program counter
     // module pc_count(R, Resetn, Clock, E, L, Q);
     pc_count reg_pc (BusWires, Resetn, Clock, pc_incr, pc_in, pc);
+
+    // r5 is stack pointer
+    sp_count reg_sp(
+        .R(BusWires), 
+        .Resetn(Resetn),
+        .Clock(Clock),
+        .U(sp_incr),
+        .D(sp_decr),
+        .L(sp_in),
+        .Q(sp)
+    );
 
     regn reg_A (BusWires, Resetn, A_in, Clock, A);
     regn reg_DOUT (BusWires, Resetn, DOUT_in, Clock, DOUT);
@@ -297,7 +332,7 @@ module proc(DIN, Resetn, Clock, Run, DOUT, ADDR, W);
             _R2: BusWires = r2;
             _R3: BusWires = r3;
             _R4: BusWires = r4;
-            _R5: BusWires = r5;
+            _SP: BusWires = sp;
             _R6: BusWires = r6;
             _PC: BusWires = pc;
             _G: BusWires = G;
@@ -321,6 +356,23 @@ module pc_count(R, Resetn, Clock, E, L, Q);
             Q <= R;
         else if (E)
             Q <= Q + 1'b1;
+endmodule
+
+module sp_count(R, Resetn, Clock, U, D, L, Q);
+    input [15:0] R;
+    input Resetn, Clock, U, D, L;
+    output [15:0] Q;
+    reg [15:0] Q;
+   
+    always @(posedge Clock)
+        if (!Resetn)
+            Q <= 16'b0;
+        else if (L)
+            Q <= R;
+        else if (U)
+            Q <= Q + 1'b1;
+        else if (D)
+            Q <= Q - 1'b1;
 endmodule
 
 module dec3to8(E, W, Y);
