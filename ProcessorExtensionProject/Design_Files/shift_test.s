@@ -10,7 +10,7 @@ DEPTH 4096
 // start of the code. The amount to be shifted in each loop iteration is set by SW[3:0].
 START: mv   sp, =0x1000       // initialize sp to bottom of memory
 
-MAIN:  mv   r0, =0x9010
+MAIN:  mv   r0, =0xF0F0
        bl   REG               // display r0 on HEX3-0
        bl   DELAY
 LOOP:  mv   r1, =SW_ADDRESS

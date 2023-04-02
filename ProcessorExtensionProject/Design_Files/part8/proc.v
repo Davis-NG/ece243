@@ -6,7 +6,7 @@ module proc(DIN, Resetn, Clock, Run, DOUT, ADDR, W);
     output wire W;
 
     wire [0:7] R_in; // r0, ..., r7 register enables
-    reg rX_in, IR_in, ADDR_in, Done, DOUT_in, A_in, G_in, AddSub, ALU_and, F_in;
+    reg rX_in, IR_in, ADDR_in, Done, DOUT_in, A_in, G_in, AddSub, ALU_and, do_shift, F_in;
     reg [2:0] Tstep_Q, Tstep_D;
     reg [15:0] BusWires;
     reg [3:0] Sel; // BusWires selector
@@ -29,6 +29,11 @@ module proc(DIN, Resetn, Clock, Run, DOUT, ADDR, W);
 	wire z, n, c;
 	wire z_alu, n_alu, c_alu;
 	reg [2:0] F;    // register F
+
+    wire shift_flag;
+    wire [1:0] shift_type;
+    wire Imm_shift;
+    wire [16:0] shift_data_out;
    
     assign III = IR[15:13];
     assign Imm = IR[12];
@@ -39,6 +44,11 @@ module proc(DIN, Resetn, Clock, Run, DOUT, ADDR, W);
 	assign n_alu = Sum[15];			// MSB
 	assign z_alu = ~|Sum[15:0];		// nor gate 
 	assign condition = IR[11:9];    //XXX 
+
+    assign shift_flag = IR[8];
+    assign shift_type = IR[6:5];
+    assign Imm_shift = IR[7];
+
 	 
 	always @(posedge Clock) begin
 	    if (F_in) 
@@ -95,13 +105,14 @@ module proc(DIN, Resetn, Clock, Run, DOUT, ADDR, W);
     *  111 0: cmp  rX,rY    performs rX − rY, sets flags 
     *  111 1: cmp  rX,#D    performs rX − D, sets flags */
     parameter mv = 3'b000, mvt = 3'b001, add = 3'b010, sub = 3'b011, ld = 3'b100, st = 3'b101,
-	     and_ = 3'b110, b_xxx = 3'b001, cmp = 3'b111;
+	     and_ = 3'b110, b_xxx = 3'b001, push = 3'b101, cmp = 3'b111, shift = 3'b111;
     // selectors for the BusWires multiplexer
     parameter _R0 = 4'b0000, _R1 = 4'b0001, _R2 = 4'b0010, _R3 = 4'b0011, _R4 = 4'b0100,
         _R5 = 4'b0101, _R6 = 4'b0110, _PC = 4'b0111, _G = 4'b1000, 
         _IR8_IR8_0 /* signed-extended immediate data */ = 4'b1001, 
         _IR7_0_0 /* immediate data << 8 */ = 4'b1010,
-        _DIN /* data-in from memory */ = 4'b1011;
+        _DIN /* data-in from memory */ = 4'b1011,
+        _IR4 = 4'b1100;
 	
 	// conditional branches codes  
 	parameter none = 3'b000, eq = 3'b001, ne = 3'b010, cc = 3'b011, cs = 3'b100, pl = 3'b101, 
@@ -115,6 +126,7 @@ module proc(DIN, Resetn, Clock, Run, DOUT, ADDR, W);
         pc_in = R_in[7] /* default pc enable */; pc_incr = 1'b0;
         sp_in = R_in[5] /* default sp enable*/; sp_incr = 1'b0; sp_dec = 1'b0;
         lr_in = 1'b0;
+        do_shift = 1'b0;
 
         case (Tstep_Q)
             T0: begin // fetch the instruction
@@ -135,13 +147,11 @@ module proc(DIN, Resetn, Clock, Run, DOUT, ADDR, W);
                         Done = 1'b1;
                     end
                     mvt: begin
-                        if (Imm == 1'b1) begin
+                        if (Imm) begin
 							Sel = _IR7_0_0;
 							rX_in = 1'b1;
 							Done = 1'b1;
-						end
-								
-						else begin //Imm = 0
+						end else begin      //Imm = 0
 							Sel = _PC;
 							A_in = 1'b1;
 							
@@ -176,17 +186,16 @@ module proc(DIN, Resetn, Clock, Run, DOUT, ADDR, W);
 						end
                     end
                     
-					add, sub, and_: begin
+					add, sub, and_, cmp: begin
                         Sel = rX;
-                        A_in = 1'b1;
-								
+                        A_in = 1'b1;	
                     end
 
                     ld: begin   // ld or pop
                         Sel = rY;
                         ADDR_in = 1'b1;
 
-                        if (Imm == 1'b1)    // one extra control signal for pop
+                        if (Imm)    // one extra control signal for pop
                             sp_incr = 1'b1;
                     end
                     
@@ -207,26 +216,32 @@ module proc(DIN, Resetn, Clock, Run, DOUT, ADDR, W);
                             Sel = _IR8_IR8_0;
                         else
                             Sel = rY; 
-                            G_in = 1'b1;
-							F_in = 1'b1;						// F_in is only high in add/sub
+                        
+                        G_in = 1'b1;
+						F_in = 1'b1;						// F_in is only high in add/sub
                     end
+
                     sub: begin
                         if (Imm)
                             Sel = _IR8_IR8_0;
                         else
                             Sel = rY; 
-                            G_in = 1'b1;
-							F_in = 1'b1;						// F_in is only high in add/sub
-                            AddSub = 1'b1;
+                            
+                        G_in = 1'b1;
+						F_in = 1'b1;						// F_in is only high in add/sub
+                        AddSub = 1'b1;
                     end
+
                     and_: begin
                         if (Imm)
                             Sel = _IR8_IR8_0;
                         else
                             Sel = rY; 
-                            G_in = 1'b1;
-                            ALU_and = 1'b1;
+                        
+                        G_in = 1'b1;
+                        ALU_and = 1'b1;
                     end
+
                     ld: // wait cycle for synchronous memory
                         ;
                     st: begin
@@ -245,7 +260,30 @@ module proc(DIN, Resetn, Clock, Run, DOUT, ADDR, W);
 						Sel = _IR8_IR8_0;
 						G_in = 1'b1;
 					end
-								
+
+                    cmp: begin
+                        if (Imm) begin
+                            Sel = _IR8_IR8_0;
+                            AddSub = 1'b1; 
+                            Done = 1'b1;
+                        end
+                        else
+                            if (shift_flag) begin
+                                if (Imm_shift)
+                                    Sel = _IR4;
+                                else
+                                    Sel = rY;
+
+                                do_shift = 1'b1;
+                                G_in = 1'b1;
+                            end else begin
+                                Sel = rY;
+                                AddSub = 1'b1; 
+                                Done = 1'b1;
+                            end
+
+                        F_in = 1'b1;
+                    end		
                     default: ; 
                 endcase
             T5: // define T3
@@ -262,7 +300,7 @@ module proc(DIN, Resetn, Clock, Run, DOUT, ADDR, W);
                         Done = 1'b1;
                     end
                     
-                    st: begin          // Only the push instruction will get this far
+                    push: begin          // Only the push instruction will get this far
                         Sel = rX;
                         DOUT_in = 1'b1;
                         W_D = 1'b1;
@@ -273,7 +311,13 @@ module proc(DIN, Resetn, Clock, Run, DOUT, ADDR, W);
 						Sel = _G;
 						pc_in = 1'b1;
 						Done = 1'b1;
-					end	    
+					end	  
+
+                    shift: begin        // Only the shift instructions will get this far
+                        Sel = _G;
+                        rX_in = 1'b1;
+                        Done = 1'b1;
+                    end  
                     default: ;
                 endcase
             default: ;
@@ -316,16 +360,25 @@ module proc(DIN, Resetn, Clock, Run, DOUT, ADDR, W);
     regn reg_IR (DIN, Resetn, IR_in, Clock, IR);
 
     flipflop reg_W (W_D, Resetn, Clock, W);
+
+    barrel barrel(
+        .shift_type(shift_type),
+        .shift(BusWires[3:0]),
+        .data_in(A),
+        .data_out(shift_data_out)
+    );
     
     // alu
     always @(*)
-        if (!ALU_and)
+        if (ALU_and)
+            Sum = A & BusWires;					// bitwise AND cond
+        else if (do_shift)
+            {Carry, Sum} = shift_data_out;
+		else
             if (!AddSub)
                {Carry, Sum} = A + BusWires;
             else
                {Carry, Sum} = A + ~BusWires + 16'b1;
-		  else
-            Sum = A & BusWires;					// bitwise AND cond
     regn reg_G (Sum, Resetn, G_in, Clock, G);
 
     // define the internal processor bus
@@ -343,6 +396,7 @@ module proc(DIN, Resetn, Clock, Run, DOUT, ADDR, W);
             _IR8_IR8_0: BusWires = {{7{IR[8]}}, IR[8:0]}; // sign extended
             _IR7_0_0: BusWires = {IR[7:0], 8'b0};
             _DIN: BusWires = DIN;
+            _IR4: BusWires = {{12{IR[3]}}, IR[3:0]};
             default: BusWires = 16'bx;
         endcase
 endmodule
