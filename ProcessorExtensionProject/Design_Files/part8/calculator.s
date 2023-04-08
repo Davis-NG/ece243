@@ -49,19 +49,40 @@ inst: 		ld 	r0, [r5]
 			
 		ld	r0, [r5]			// instruction
 		and 	r0, #0x2
-		cmp 	r0, #0x2			// sub
+		cmp 	r0, #0x2			
 		beq 	sub
 			
 		ld	r0, [r5]			// instruction
 		and 	r0, #0x4
-		cmp 	r0, #0x4			// sub
+		cmp 	r0, #0x4			
 		beq 	mul
 			
 		ld	r0, [r5]			// instruction
 		and 	r0, #0x8
-		cmp 	r0, #0x8			// sub
+		cmp 	r0, #0x8			
 		beq 	div
-			
+
+		ld	r0, [r5]			// instruction
+		and 	r0, #0x10
+		cmp 	r0, #0x10			
+		beq 	and
+
+		ld	r0, [r5]			// instruction
+		and 	r0, #0x20
+		cmp 	r0, #0x20			
+		beq 	left
+		
+		ld	r0, [r5]			// instruction
+		and 	r0, #0x40
+		cmp 	r0, #0x40			
+		beq 	right
+
+		ld	r0, [r5]			// instruction
+		and 	r0, #0x80
+		cmp 	r0, #0x80			
+		beq 	roar
+
+	
 		b 	inst
 	// r0 has the answer		
 add: 		add 	r2, r3
@@ -69,24 +90,11 @@ add: 		add 	r2, r3
 		st 	r0, [r4]
 		b 	next
 			
-sub: 		//sub 	r2, r3
-		//bmi 	sub_neg
+sub: 		
 		sub	r2, r3
 		mv 	r0, r2
 		st 	r0, [r4]
 		b 	next
-
-//sub_neg:	sub 	r3, r2
-		///mv 	r0, r3
-		//sub 	r2, r3
-		//st 	r0, [r4]
-		
-		// 6th hex
-		//mvt r5, #HEX_ADDRESS	
-		//add r5, #5
-		//mv r4, #0x40
-		//st r4, [r5]
-		//b 	next
 			
 mul:		mv 	r1, #0
 mul2:		
@@ -99,6 +107,27 @@ mul2:
 done_mul:	mv 	r0, r1
 		st 	r0, [r4]
 		b 	next
+
+and:		and	r2, r3
+		mv 	r0, r2
+		st 	r0, [r4]
+		b 	next
+
+left: 		lsl 	r2, r3
+		mv 	r0, r2
+		st 	r0, [r4]
+		b 	next
+
+right: 		lsr 	r2, r3
+		mv 	r0, r2
+		st 	r0, [r4]
+		b 	next
+
+roar: 		ror 	r2, r3
+		mv 	r0, r2
+		st 	r0, [r4]
+		b 	next
+
 //subroutine to perform the integer division r2 / r4.
  //returns: quotient in r0, and remainder in r1 			
 			
