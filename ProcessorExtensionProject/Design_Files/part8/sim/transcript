@@ -1,5 +1,5 @@
 # vsim -pli "simfpga.vpi" -Lf 220model -Lf altera_mf_ver -Lf verilog -c -do "run -all" tb 
-# Start time: 04:22:36 on Apr 02,2023
+# Start time: 01:50:45 on Apr 11,2023
 # Loading work.tb
 # Loading work.top
 # Loading work.part8
@@ -23,3 +23,10 @@
 # 
 # 
 # Connected to server!
+# GUI has closed the connection
+# ** Note: $finish    : /build/swbuild/SJ/nightly/18.1std/625/l64/work/modelsim/eda/sim_lib/altera_mf.v(49943)
+#    Time: 4937755 ns  Iteration: 1  Instance: /tb
+# 
+# Quitting...
+# End time: 01:51:31 on Apr 11,2023, Elapsed time: 0:00:46
+# Errors: 0, Warnings: 0
