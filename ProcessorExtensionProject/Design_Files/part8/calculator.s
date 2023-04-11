@@ -2,7 +2,6 @@
 .define HEX_ADDRESS 0x20
 .define	LED_ADDRESS 0x10
 
-
 start:	mvt 	r3, #SW_ADDRESS		// switches
 		mvt 	r4, #LED_ADDRESS		// leds
 		mvt   	sp, #0x10   		// sp = 0x1000 = 4096
@@ -146,6 +145,34 @@ sum2:	add 	r3, #1
 		b 	sum2
 done_sum:	mv 	r0, r2
 		st 	r0, [r4]
+		b	next
+square: 	mv 	r3, r2
+		b 	mul
+run_sum:	mv 	r1, r3
+		cmp 	r2, r3
+		beq 	next
+		mv 	r3, r2
+sum2:		add 	r3, #1
+		add 	r2, r3
+		cmp 	r3, r1
+		beq	done_sum 
+		b 	sum2
+done_sum:	mv 	r0, r2
+		st 	r0, [r4]
+		b 	next	
+tri:		mv 	r1, #0
+tri2:		
+		cmp 	r3, #0
+		beq 	done_tri
+		add 	r1, r2
+		sub	r3, #1
+		b 	tri2
+
+done_tri:	mv 	r0, r1
+		lsr 	r0, #1
+		st 	r0, [r4]
+		b 	next		
+zero:		mv 	r0, #0
 		b 	next
 
 tri:		mv 	r0, #0
@@ -167,7 +194,9 @@ zero:	mv 	r0, #0
 //subroutine to perform the integer division r2 / r4.
  //returns: quotient in r0, and remainder in r1 			
 			
-div: 		mv 	r1, #0
+div: 		cmp 	r3, #0
+		beq 	error
+		mv 	r1, #0
 cont: 		cmp	r2, r3
 		bmi	div_end
 		sub 	r2, r3
