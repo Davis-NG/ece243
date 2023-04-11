@@ -2,8 +2,10 @@
 .define HEX_ADDRESS 0x20
 .define	LED_ADDRESS 0x10
 
+
 start:		mvt 	r5, #SW_ADDRESS		// switches
 		mvt 	r4, #LED_ADDRESS		// leds
+		//mvt   	sp, #0x10   		// sp = 0x1000 = 4096
 
 main: 		ld 	r0, [r5]
 		mvt	r1, #0x1	
@@ -14,10 +16,14 @@ main: 		ld 	r0, [r5]
 val1: 
 		ld 	r0, [r5]
 		and 	r0, #0x7f			// can use first 7 button to input
+		
 		mv 	r2, r0				// r2 has the first number
+		st	r0, [r4]
+		//bl 	current_val
 		b 	wait
 
-wait: 		ld 	r0, [r5]	
+wait: 		
+		ld 	r0, [r5]	
 		and 	r0, r1			// 8th button decides
 		cmp 	r0, r1
 		beq 	wait
@@ -29,7 +35,10 @@ val2:
 		bne	val2
 		ld 	r0, [r5]
 		and 	r0, #0x7f			// can use first 7 button to input
+		
 		mv 	r3, r0				// r3 has the 2nd number
+		st	r0, [r4]
+		//bl 	current_val
 
 wait_inst:	ld 	r0, [r5]	
 		and 	r0, r1			// 8th button decides
@@ -65,22 +74,22 @@ inst: 		ld 	r0, [r5]
 		ld	r0, [r5]			// instruction
 		and 	r0, #0x10
 		cmp 	r0, #0x10			
-		beq 	and
+		beq 	tri
 
 		ld	r0, [r5]			// instruction
 		and 	r0, #0x20
 		cmp 	r0, #0x20			
-		beq 	left
+		beq 	square
 		
 		ld	r0, [r5]			// instruction
 		and 	r0, #0x40
 		cmp 	r0, #0x40			
-		beq 	right
+		beq 	run_sum
 
 		ld	r0, [r5]			// instruction
 		and 	r0, #0x80
 		cmp 	r0, #0x80			
-		beq 	roar
+		beq 	log
 
 	
 		b 	inst
@@ -97,6 +106,10 @@ sub:
 		b 	next
 			
 mul:		mv 	r1, #0
+		cmp 	r2, #0
+		beq	zero
+		cmp 	r3, #0
+		beq	zero
 mul2:		
 		cmp 	r3, #0
 		beq 	done_mul
@@ -108,30 +121,51 @@ done_mul:	mv 	r0, r1
 		st 	r0, [r4]
 		b 	next
 
-and:		and	r2, r3
-		mv 	r0, r2
+log:		mv 	r3, #0
+log2:		lsr 	r2, #1
+		cmp 	r2, #0
+		beq 	donelog
+		add 	r3, #1
+		b	log2
+donelog:	mv 	r0, r3
 		st 	r0, [r4]
+		b	next
+square: 	mv 	r3, r2
+		b 	mul
+run_sum:	mv 	r1, r3
+		cmp 	r2, r3
+		beq 	next
+		mv 	r3, r2
+sum2:		add 	r3, #1
+		add 	r2, r3
+		cmp 	r3, r1
+		beq	done_sum 
+		b 	sum2
+done_sum:	mv 	r0, r2
+		st 	r0, [r4]
+		b 	next	
+tri:		mv 	r1, #0
+tri2:		
+		cmp 	r3, #0
+		beq 	done_tri
+		add 	r1, r2
+		sub	r3, #1
+		b 	tri2
+
+done_tri:	mv 	r0, r1
+		lsr 	r0, #1
+		st 	r0, [r4]
+		b 	next		
+zero:		mv 	r0, #0
 		b 	next
 
-left: 		lsl 	r2, r3
-		mv 	r0, r2
-		st 	r0, [r4]
-		b 	next
-
-right: 		lsr 	r2, r3
-		mv 	r0, r2
-		st 	r0, [r4]
-		b 	next
-
-roar: 		ror 	r2, r3
-		mv 	r0, r2
-		st 	r0, [r4]
-		b 	next
 
 //subroutine to perform the integer division r2 / r4.
  //returns: quotient in r0, and remainder in r1 			
 			
-div: 		mv 	r1, #0
+div: 		cmp 	r3, #0
+		beq 	error
+		mv 	r1, #0
 cont: 		cmp	r2, r3
 		bmi	div_end
 		sub 	r2, r3
@@ -144,6 +178,43 @@ div_end:    	mv	r0, r1     // quotient in r0 (remainder in r1)
             	st 	r0, [r4]
 		b 	next
 
+error:		mvt	r3, #HEX_ADDRESS
+		mv	r4, #ERROR
+		ld	r2, [r4]
+		st	r2, [r3]
+		
+		add 	r4, #1
+		add 	r3, #1
+		ld	r2, [r4]
+		st	r2, [r3]
+
+		add 	r4, #1
+		add 	r3, #1
+		ld	r2, [r4]
+		st	r2, [r3]
+		
+		add 	r4, #1
+		add 	r3, #1
+		ld	r2, [r4]
+		st	r2, [r3]
+		
+		add 	r4, #1
+		add 	r3, #1
+		ld	r2, [r4]
+		st	r2, [r3]
+		
+		add 	r4, #1
+		add 	r3, #1
+		ld	r2, [r4]
+		st	r2, [r3]
+finish:		ld 	r1, [r5]
+		mvt	r2, #0x1
+		and 	r1, r2			// 8th button decides
+		cmp	r1, r2
+		beq	finish
+		mv	pc, #start
+	
+
 next: 		ld 	r1, [r5]
 		mvt	r2, #0x1
 		and 	r1, r2			// 8th button decides
@@ -152,6 +223,7 @@ next: 		ld 	r1, [r5]
 		//b main
 
 DISPLAY:
+	
 		mv 	r6, pc
 		b 	DIV10	
 		mvt 	r5, #HEX_ADDRESS		// HEX
@@ -245,6 +317,10 @@ DATA:
 		.word 	0b00000111		// 7
 		.word 	0b01111111		// 8
 		.word	0b01100111		// 9
-			
-			
 
+ERROR:		.word	0b01010000		// r
+		.word	0b01011100		// o
+		.word	0b01010000		// r
+		.word	0b01010000		// r
+		.word	0b01111001		// E
+		.word	0b00000000		// blank
