@@ -18,7 +18,7 @@ val1:
 		
 		mv 	r2, r0				// r2 has the first number
 		st	r0, [r4]
-		//bl 	current_val
+		bl 	DISPLAY
 		b 	wait
 
 wait: 		
@@ -37,7 +37,7 @@ val2:
 		
 		mv 	r1, r0				// r1 has the 2nd number
 		st	r0, [r4]
-		//bl 	current_val
+		bl 	DISPLAY
 		push r1
 		mvt r1, #0x1
 
@@ -134,44 +134,19 @@ donelog:	mv 	r0, r1
 square: 	mv 	r1, r2
 		b 	mul
 
-run_sum:	mv 	r1, r3
-		cmp 	r2, r3
+run_sum:	mv 	r3, r1
+		cmp 	r2, r1
 		beq 	next
-		mv 	r3, r2
-sum2:	add 	r3, #1
-		add 	r2, r3
-		cmp 	r3, r1
-		beq	done_sum 
-		b 	sum2
-done_sum:	mv 	r0, r2
-		st 	r0, [r4]
-		b	next
-square: 	mv 	r3, r2
-		b 	mul
-run_sum:	mv 	r1, r3
-		cmp 	r2, r3
-		beq 	next
-		mv 	r3, r2
-sum2:		add 	r3, #1
-		add 	r2, r3
-		cmp 	r3, r1
+		mv 	r1, r2
+sum2:		add 	r1, #1
+		add 	r2, r1
+		cmp 	r1, r3
 		beq	done_sum 
 		b 	sum2
 done_sum:	mv 	r0, r2
 		st 	r0, [r4]
 		b 	next	
-tri:		mv 	r1, #0
-tri2:		
-		cmp 	r3, #0
-		beq 	done_tri
-		add 	r1, r2
-		sub	r3, #1
-		b 	tri2
-
-done_tri:	mv 	r0, r1
-		lsr 	r0, #1
-		st 	r0, [r4]
-		b 	next		
+	
 zero:		mv 	r0, #0
 		b 	next
 
@@ -187,36 +162,79 @@ done_tri:
 		lsr 	r0, #1
 		st 	r0, [r4]
 		b 	next		
-zero:	mv 	r0, #0
-		b 	next
 
 
 //subroutine to perform the integer division r2 / r4.
  //returns: quotient in r0, and remainder in r1 			
 			
-div: 		cmp 	r3, #0
+div: 		cmp 	r1, #0
 		beq 	error
-		mv 	r1, #0
-cont: 		cmp	r2, r3
+		mv 	r3, #0
+cont: 		cmp	r2, r1
 		bmi	div_end
-		sub 	r2, r3
-		add 	r1, #1
+		sub 	r2, r1
+		add 	r3, #1
 		b 	cont
 
 
-div_end:    	mv	r0, r1     // quotient in r0 (remainder in r1)
-		mv	r1, r2
+div_end:    	mv	r0, r3     // quotient in r0 (remainder in r1)
+		mv	r3, r2
+		mv 	r1, r3
             	st 	r0, [r4]
 		b 	next
+error:		mvt	r3, #HEX_ADDRESS
+		mv	r4, #ERROR
+		ld	r2, [r4]
+		st	r2, [r3]
+		
+		add 	r4, #1
+		add 	r3, #1
+		ld	r2, [r4]
+		st	r2, [r3]
+
+		add 	r4, #1
+		add 	r3, #1
+		ld	r2, [r4]
+		st	r2, [r3]
+		
+		add 	r4, #1
+		add 	r3, #1
+		ld	r2, [r4]
+		st	r2, [r3]
+		
+		add 	r4, #1
+		add 	r3, #1
+		ld	r2, [r4]
+		st	r2, [r3]
+		
+		add 	r4, #1
+		add 	r3, #1
+		ld	r2, [r4]
+		st	r2, [r3]
+finish:		mvt	r3, SW_ADDRESS
+		ld 	r1, [r3]
+		mvt	r2, #0x1
+		and 	r1, r2			// 8th button decides
+		cmp	r1, r2
+		beq	finish
+		mv	pc, #start
+
 
 next: 	ld 	r1, [r3]
 		mvt	r2, #0x1
 		and 	r1, r2			// 8th switch decides
 		cmp	r1, r2
 		beq	next
-		//b main
+		bl DISPLAY
+		b start
 
 DISPLAY:
+		push r1
+		push r2
+		push r3
+		push r4
+		push r6
+		
 		bl DIV10	
 		mvt 	r3, #HEX_ADDRESS		// HEX
 		// 1st hex
@@ -269,7 +287,12 @@ DISPLAY:
 		add 	r4, r0
 		ld 	r4, [r4]
 		st 	r4, [r3]			// display on hex
-		mv 	pc, #start
+		pop r6
+		pop r4
+		pop r3
+		pop r2
+		pop r1
+		mv 	pc, r6
 
 // subroutine DIV10
  //       This subroutine divides the number in r0 by 10
@@ -304,3 +327,9 @@ DATA:
 		.word 	0b00000111		// 7
 		.word 	0b01111111		// 8
 		.word	0b01100111		// 9
+ERROR:		.word	0b01010000		// r
+		.word	0b01011100		// o
+		.word	0b01010000		// r
+		.word	0b01010000		// r
+		.word	0b01111001		// E
+		.word	0b00000000		// blank
