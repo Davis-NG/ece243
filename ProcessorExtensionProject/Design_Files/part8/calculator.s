@@ -211,7 +211,7 @@ error:		mvt	r3, #HEX_ADDRESS
 		add 	r3, #1
 		ld	r2, [r4]
 		st	r2, [r3]
-finish:		mvt	r3, SW_ADDRESS
+finish:		mvt	r3, #SW_ADDRESS
 		ld 	r1, [r3]
 		mvt	r2, #0x1
 		and 	r1, r2			// 8th button decides
